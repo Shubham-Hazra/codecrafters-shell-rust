@@ -15,7 +15,7 @@ fn check_command(command: &str, path_dirs: &[&str]) -> (bool, String) {
 }
 
 fn main() {
-    let builtin_commands: Vec<&str> = vec!["echo", "exit", "type"];
+    let builtin_commands: Vec<&str> = vec!["echo", "exit", "type", "pwd"];
     let path: String = env::var("PATH").unwrap();
     let path_dirs: Vec<&str> = path.split(":").collect();
 
@@ -39,6 +39,10 @@ fn main() {
         } else if words[0] == "echo" {
             print!("{}", words[1]);
             continue;
+        } else if words[0] == "pwd" {
+            let pwd = env::current_dir().unwrap();
+            println!("{}", &pwd.display());
+            continue;
         } else if words[0] == "type" {
             if builtin_commands.contains(&words[1].trim()) {
                 println!("{} is a shell builtin", words[1].trim())
@@ -54,7 +58,11 @@ fn main() {
         if !result.0 {
             println!("{}: not found", input.trim());
         } else {
-            let args: Vec<&str> = words[1].trim().split_ascii_whitespace().collect();
+            let args: Vec<&str> = if words.len() > 1 {
+                words[1].trim().split_ascii_whitespace().collect()
+            } else {
+                Vec::new()
+            };
             let status = Command::new(result.1)
                 .args(args)
                 .spawn()
