@@ -53,29 +53,29 @@ fn main() {
             continue;
         }
 
-        let result = check_command(words[0].trim(), &path_dirs);
+        // let result = check_command(words[0].trim(), &path_dirs);
 
-        if !result.0 {
-            println!("{}: not found", input.trim());
-        } else {
-            if words.len() == 1 && words[0] == "" {
-                exit(1);
-            }
-            let args: Vec<&str> = if words.len() > 1 {
-                words[1].trim().split_ascii_whitespace().collect()
-            } else {
-                Vec::new()
-            };
-            let status = Command::new(result.1)
-                .args(args)
-                .spawn()
-                .expect("Something went wrong")
-                .wait()
-                .expect("Something went wrong");
+        // if !result.0 {
+        //     println!("{}: not found", input.trim());
+        // } else {
+        //     if words.len() == 1 && words[0] == "" {
+        //         exit(1);
+        //     }
+        //     let args: Vec<&str> = if words.len() > 1 {
+        //         words[1].trim().split_ascii_whitespace().collect()
+        //     } else {
+        //         Vec::new()
+        //     };
+        //     let status = Command::new(result.1)
+        //         .args(args)
+        //         .spawn()
+        //         .expect("Something went wrong")
+        //         .wait()
+        //         .expect("Something went wrong");
 
-            if !status.success() {
-                println!("Process failed");
-            }
-        }
+        //     if !status.success() {
+        //         println!("Process failed");
+        //     }
+        // }
     }
 }
