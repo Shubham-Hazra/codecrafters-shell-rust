@@ -29,21 +29,21 @@ fn main() {
 
         let words: Vec<&str> = input.trim_start().splitn(2, " ").collect();
 
-        if words[0] == "exit" {
+        if words[0].trim() == "exit" {
             if words.len() > 2 {
                 println!("Error. Please give an integer exit code");
                 exit(1);
             }
             let exitcode: i32 = words[1].trim().parse().unwrap();
             exit(exitcode);
-        } else if words[0] == "echo" {
+        } else if words[0].trim() == "echo" {
             print!("{}", words[1]);
             continue;
-        } else if words[0] == "pwd" {
+        } else if words[0].trim() == "pwd" {
             let pwd = env::current_dir().unwrap();
             println!("{}", pwd.display());
             continue;
-        } else if words[0] == "type" {
+        } else if words[0].trim() == "type" {
             if builtin_commands.contains(&words[1].trim()) {
                 println!("{} is a shell builtin", words[1].trim())
             } else {
@@ -53,29 +53,29 @@ fn main() {
             continue;
         }
 
-        // let result = check_command(words[0].trim(), &path_dirs);
+        let result = check_command(words[0].trim(), &path_dirs);
 
-        // if !result.0 {
-        //     println!("{}: not found", input.trim());
-        // } else {
-        //     if words.len() == 1 && words[0] == "" {
-        //         exit(1);
-        //     }
-        //     let args: Vec<&str> = if words.len() > 1 {
-        //         words[1].trim().split_ascii_whitespace().collect()
-        //     } else {
-        //         Vec::new()
-        //     };
-        //     let status = Command::new(result.1)
-        //         .args(args)
-        //         .spawn()
-        //         .expect("Something went wrong")
-        //         .wait()
-        //         .expect("Something went wrong");
+        if !result.0 {
+            println!("{}: not found", input.trim());
+        } else {
+            if words.len() == 1 && words[0] == "" {
+                exit(1);
+            }
+            let args: Vec<&str> = if words.len() > 1 {
+                words[1].trim().split_ascii_whitespace().collect()
+            } else {
+                Vec::new()
+            };
+            let status = Command::new(result.1)
+                .args(args)
+                .spawn()
+                .expect("Something went wrong")
+                .wait()
+                .expect("Something went wrong");
 
-        //     if !status.success() {
-        //         println!("Process failed");
-        //     }
-        // }
+            if !status.success() {
+                println!("Process failed");
+            }
+        }
     }
 }
