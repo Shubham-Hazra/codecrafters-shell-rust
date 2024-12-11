@@ -58,6 +58,9 @@ fn main() {
         if !result.0 {
             println!("{}: not found", input.trim());
         } else {
+            if words.len() == 1 && words[0] == "" {
+                exit(1);
+            }
             let args: Vec<&str> = if words.len() > 1 {
                 words[1].trim().split_ascii_whitespace().collect()
             } else {
