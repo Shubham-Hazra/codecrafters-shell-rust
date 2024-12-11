@@ -49,7 +49,7 @@ fn main() {
 
         let result = check_command(words[0].trim(), &path_dirs);
 
-        if result.0 {
+        if !result.0 {
             println!("{}: not found", input.trim());
         } else {
             let args: Vec<&str> = words[1].trim().split_ascii_whitespace().collect();
