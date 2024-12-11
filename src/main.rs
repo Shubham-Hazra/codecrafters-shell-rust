@@ -41,7 +41,7 @@ fn main() {
             continue;
         } else if words[0] == "pwd" {
             let pwd = env::current_dir().unwrap();
-            println!("{}", &pwd.display());
+            println!("{}", pwd.display());
             continue;
         } else if words[0] == "type" {
             if builtin_commands.contains(&words[1].trim()) {
