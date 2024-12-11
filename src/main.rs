@@ -38,6 +38,7 @@ fn main() {
             exit(exitcode);
         } else if words[0] == "echo" {
             print!("{}", words[1]);
+            continue;
         } else if words[0] == "type" {
             if builtin_commands.contains(&words[1].trim()) {
                 println!("{} is a shell builtin", words[1].trim())
@@ -45,6 +46,7 @@ fn main() {
                 let result = check_command(words[1].trim(), &path_dirs);
                 println!("{}", &result.1);
             }
+            continue;
         }
 
         let result = check_command(words[0].trim(), &path_dirs);
