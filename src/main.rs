@@ -1,80 +1,79 @@
-use std::env;
+use core::str;
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::path::Path;
-use std::process::{exit, Command};
-
-fn check_command(command: &str, path_dirs: &[&str]) -> (bool, String) {
-    for dir in path_dirs {
-        let path = format!("{}/{}", dir, command);
-        if Path::new(&path).exists() {
-            return (true, path);
-        }
-    }
-    (false, format!("{}: not found", command))
-}
-
+use std::{env, path::Path, process};
 fn main() {
-    let builtin_commands: Vec<&str> = vec!["echo", "exit", "type", "pwd"];
-    let path: String = env::var("PATH").unwrap();
-    let path_dirs: Vec<&str> = path.split(":").collect();
-
+    let builtins = vec!["exit", "echo", "type"];
+    let path_env = env::var("PATH").unwrap_or_else(|_| "PATH not found".to_string());
+    let paths: Vec<&str> = path_env.split(':').collect();
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();
-
+        // Wait for user input
         let stdin = io::stdin();
         let mut input = String::new();
         stdin.read_line(&mut input).unwrap();
-
-        let words: Vec<&str> = input.trim_start().splitn(2, " ").collect();
-
-        if words[0] == "exit" {
-            if words.len() > 2 {
-                println!("Error. Please give an integer exit code");
-                exit(1);
-            }
-            let exitcode: i32 = words[1].trim().parse().unwrap();
-            exit(exitcode);
-        } else if words[0] == "echo" {
-            print!("{}", words[1]);
-            continue;
-        } else if words[0] == "pwd" {
-            let pwd = env::current_dir().unwrap();
-            println!("{}", pwd.display());
-            continue;
-        } else if words[0] == "type" {
-            if builtin_commands.contains(&words[1].trim()) {
-                println!("{} is a shell builtin", words[1].trim())
-            } else {
-                let result = check_command(words[1].trim(), &path_dirs);
-                println!("{}", &result.1);
-            }
+        let input = input.trim();
+        let tokens = input.split_whitespace().collect::<Vec<&str>>();
+        if tokens.is_empty() {
             continue;
         }
-
-        let result = check_command(words[0].trim(), &path_dirs);
-
-        if !result.0 {
-            println!("{}: not found", input.trim());
-        } else {
-            if words.len() == 1 && words[0] == "" {
-                exit(1);
+        match tokens[0] {
+            "exit" if tokens.len() == 2 => {
+                let code = tokens[1].parse::<i32>().unwrap_or_else(|_| {
+                    println!("exit: invalid exit code");
+                    1
+                });
+                process::exit(code);
             }
-            let args: Vec<&str> = if words.len() > 1 {
-                words[1].trim().split_ascii_whitespace().collect()
-            } else {
-                Vec::new()
-            };
-            let status = Command::new(result.1)
-                .args(args)
-                .spawn()
-                .expect("Something went wrong")
-                .wait()
-                .expect("Something went wrong");
-
-            if !status.success() {
-                println!("Process failed");
+            "echo" => {
+                let args = &tokens[1..].join(" ");
+                println!("{}", args)
+            }
+            "type" if tokens.len() == 2 => {
+                let command = tokens[1];
+                if builtins.contains(&command) {
+                    println!("{} is a shell builtin", command);
+                } else {
+                    let mut is_found = false;
+                    for path in &paths {
+                        let full_path = Path::new(path).join(command);
+                        if full_path.exists() {
+                            println!("{} is {}", command, full_path.display());
+                            is_found = true;
+                            break;
+                        }
+                    }
+                    if !is_found {
+                        println!("{} not found", command);
+                    }
+                }
+            }
+            "pwd" if tokens.len() == 1 => {
+                let path = env::current_dir().unwrap();
+                println!("{}", path.display());
+            }
+            _ => {
+                let command = tokens[0];
+                let mut is_found = false;
+                for path in &paths {
+                    let full_path = Path::new(path).join(command);
+                    if full_path.exists() {
+                        is_found = true;
+                        let args = &tokens[1..];
+                        let status = process::Command::new(full_path)
+                            .args(args)
+                            .status()
+                            .expect("failed to execute process");
+                        if !status.success() {
+                            eprintln!("{}: command failed", command);
+                        }
+                        break;
+                    }
+                }
+                if !is_found {
+                    println!("{}: command not found", input)
+                }
             }
         }
     }
