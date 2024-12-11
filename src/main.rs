@@ -1,9 +1,23 @@
+use std::env;
 #[allow(unused_imports)]
 use std::io::{self, Write};
+use std::path::Path;
 use std::process;
+
+fn check_command(command: &str, path_dirs: Vec<&str>) -> String {
+    for dir in path_dirs {
+        let path = format!("{}/{}", dir, command);
+        if Path::new(&path).exists() {
+            return path;
+        }
+    }
+    format!("{}: not found", command)
+}
 
 fn main() {
     let builtin_commands: Vec<&str> = vec!["echo", "exit", "type"];
+    let path = env::var("PATH").unwrap();
+    let path_dirs: Vec<&str> = path.split(":").collect();
 
     loop {
         print!("$ ");
@@ -20,7 +34,6 @@ fn main() {
                 println!("Error. Please give an integer exit code");
                 process::exit(1);
             }
-
             let exitcode: i32 = words[1].trim().parse().unwrap();
             process::exit(exitcode);
         } else if words[0] == "echo" {
@@ -29,7 +42,8 @@ fn main() {
             if builtin_commands.contains(&words[1].trim()) {
                 println!("{} is a shell builtin", words[1].trim())
             } else {
-                println!("{}: not found", words[1].trim());
+                let result = check_command(words[1].trim(), path_dirs.clone());
+                println!("{}", &result);
             }
         } else {
             println!("{}: not found", input.trim());
