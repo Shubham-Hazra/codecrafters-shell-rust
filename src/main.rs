@@ -2,16 +2,16 @@ use std::env;
 #[allow(unused_imports)]
 use std::io::{self, Write};
 use std::path::Path;
-use std::process;
+use std::process::{exit, Command};
 
-fn check_command(command: &str, path_dirs: &[&str]) -> String {
+fn check_command(command: &str, path_dirs: &[&str]) -> (bool, String) {
     for dir in path_dirs {
         let path = format!("{}/{}", dir, command);
         if Path::new(&path).exists() {
-            return path;
+            return (true, path);
         }
     }
-    format!("{}: not found", command)
+    (false, format!("{}: not found", command))
 }
 
 fn main() {
@@ -32,10 +32,10 @@ fn main() {
         if words[0] == "exit" {
             if words.len() > 2 {
                 println!("Error. Please give an integer exit code");
-                process::exit(1);
+                exit(1);
             }
             let exitcode: i32 = words[1].trim().parse().unwrap();
-            process::exit(exitcode);
+            exit(exitcode);
         } else if words[0] == "echo" {
             print!("{}", words[1]);
         } else if words[0] == "type" {
@@ -43,10 +43,26 @@ fn main() {
                 println!("{} is a shell builtin", words[1].trim())
             } else {
                 let result = check_command(words[1].trim(), &path_dirs);
-                println!("{}", &result);
+                println!("{}", &result.1);
             }
-        } else {
+        }
+
+        let result = check_command(words[0].trim(), &path_dirs);
+
+        if result.0 {
             println!("{}: not found", input.trim());
+        } else {
+            let args: Vec<&str> = words[1].trim().split_ascii_whitespace().collect();
+            let status = Command::new(result.1)
+                .args(args)
+                .spawn()
+                .expect("Something went wrong")
+                .wait()
+                .expect("Something went wrong");
+
+            if !status.success() {
+                println!("Process failed");
+            }
         }
     }
 }
