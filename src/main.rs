@@ -3,7 +3,7 @@ use core::str;
 use std::io::{self, Write};
 use std::{env, path::Path, process};
 fn main() {
-    let builtins = vec!["exit", "echo", "type"];
+    let builtins = vec!["exit", "echo", "type", "pwd"];
     let path_env = env::var("PATH").unwrap_or_else(|_| "PATH not found".to_string());
     let paths: Vec<&str> = path_env.split(':').collect();
     loop {
