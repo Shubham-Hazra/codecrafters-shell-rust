@@ -4,7 +4,7 @@ use std::io::{self, Write};
 use std::path::Path;
 use std::process;
 
-fn check_command(command: &str, path_dirs: Vec<&str>) -> String {
+fn check_command(command: &str, path_dirs: &[&str]) -> String {
     for dir in path_dirs {
         let path = format!("{}/{}", dir, command);
         if Path::new(&path).exists() {
@@ -16,7 +16,7 @@ fn check_command(command: &str, path_dirs: Vec<&str>) -> String {
 
 fn main() {
     let builtin_commands: Vec<&str> = vec!["echo", "exit", "type"];
-    let path = env::var("PATH").unwrap();
+    let path: String = env::var("PATH").unwrap();
     let path_dirs: Vec<&str> = path.split(":").collect();
 
     loop {
@@ -42,7 +42,7 @@ fn main() {
             if builtin_commands.contains(&words[1].trim()) {
                 println!("{} is a shell builtin", words[1].trim())
             } else {
-                let result = check_command(words[1].trim(), path_dirs.clone());
+                let result = check_command(words[1].trim(), &path_dirs);
                 println!("{}", &result);
             }
         } else {
