@@ -27,7 +27,7 @@ fn main() {
         let mut input = String::new();
         stdin.read_line(&mut input).unwrap();
 
-        let words: Vec<&str> = input.trim().splitn(2, " ").collect();
+        let words: Vec<&str> = input.trim_start().splitn(2, " ").collect();
 
         if words[0] == "exit" {
             if words.len() > 2 {
