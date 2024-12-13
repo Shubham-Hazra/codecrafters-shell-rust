@@ -46,6 +46,7 @@ fn main() {
                 continue;
             }
             let _ = std::env::set_current_dir(&dir_path);
+            continue;
         } else if words[0].trim() == "pwd" {
             let pwd = env::current_dir().unwrap();
             println!("{}", pwd.display());
