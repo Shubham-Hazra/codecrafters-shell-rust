@@ -40,9 +40,10 @@ fn main() {
             print!("{}", words[1]);
             continue;
         } else if words[0].trim() == "cd" {
-            let dir_path = Path::new(words[1].trim());
+            let path = words[1].trim().replace("~", &env::var("HOME").unwrap());
+            let dir_path = Path::new(&path);
             if !dir_path.exists() {
-                println!("cd: {}: No such file or directory", words[1].trim());
+                println!("cd: {}: No such file or directory", path);
                 continue;
             }
             let _ = std::env::set_current_dir(&dir_path);
