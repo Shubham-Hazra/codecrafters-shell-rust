@@ -15,7 +15,7 @@ fn check_command(command: &str, path_dirs: &[&str]) -> (bool, String) {
 }
 
 fn main() {
-    let builtin_commands: Vec<&str> = vec!["echo", "exit", "type", "pwd"];
+    let builtin_commands: Vec<&str> = vec!["echo", "exit", "type", "pwd", "cd"];
     let path: String = env::var("PATH").unwrap();
     let path_dirs: Vec<&str> = path.split(":").collect();
 
@@ -39,6 +39,13 @@ fn main() {
         } else if words[0].trim() == "echo" {
             print!("{}", words[1]);
             continue;
+        } else if words[0].trim() == "cd" {
+            let dir_path = Path::new(words[1].trim());
+            if !dir_path.exists() {
+                println!("cd: {}: No such file or directory", words[1].trim());
+                continue;
+            }
+            let _ = std::env::set_current_dir(&dir_path);
         } else if words[0].trim() == "pwd" {
             let pwd = env::current_dir().unwrap();
             println!("{}", pwd.display());
